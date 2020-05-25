@@ -4,31 +4,56 @@
 \alias{get_microdata}
 \title{Descarga de Bases de EPH}
 \usage{
-get_microdata(year = 2018, trimester = NA, wave = NA,
-  type = "individual")
+get_microdata(
+  year = 2018,
+  trimester = NA,
+  wave = NA,
+  type = "individual",
+  vars = "all"
+)
 }
 \arguments{
-\item{year}{un integer a partir de 2003}
+\item{year}{un integer o vector de integers a partir de 2003}
 
-\item{trimester}{un integer con el numero de trimester: 1,2,3,4, para la EPH continua}
+\item{trimester}{un integer o vector de integers con el numero de trimester: 1,2,3,4, para la EPH continua}
 
-\item{wave}{un integer con el numero de onda, 1 o 2, para la EPH puntual}
+\item{wave}{un integer o vector de integers con el numero de onda, 1 o 2, para la EPH puntual}
 
-\item{type}{tipo de base a descargar: 'individual' ; 'hogar', default individual}
+\item{type}{un character o vector de characters con el tipo de base a descargar: 'individual'; 'hogar', default individual}
+
+\item{vars}{un vector de characters. variables a seleccionar. Default='all' trae todas las variables}
+}
+\value{
+En caso de una unica base devuevle un dataframe.
+En caso de una consulta multiple devuelve un dataframe anidado, con
+la informacion de cada consulta y una columna `microdata` con la base
+correspondiente
 }
 \description{
 Funcion que descarga bases de la Encuesta Permanente de Hogares del INDEC a partir de 1996
 }
 \details{
 Las bases de la EPH puntual utilizan el parametro wave, para referirse a las ondas.
-Su alcance es entre la onda 1 de 1996 y a onda 1 de 2003.
+Su alcance es entre la onda 1 de 1996 y la onda 1 de 2003.
 
-Las bases de la EPH continua utiliza el parametro trimester, para referirse a los trimestres.
+Las bases de la EPH continua utilizan el parametro trimester, para referirse a los trimestres.
 Su alcance es entre tercer trimestre de 2003 a la actualidad
 disclaimer: El script no es un producto oficial de INDEC.
 }
 \examples{
 
-base_individual <- get_microdata(year = 2018, trimester = 1,type='individual')
+base_individual <- get_microdata(year = 2018:2019,
+                                 trimester = 1,
+                                 type='individual',
+                                 vars = c('PONDERA','ESTADO','CAT_OCUP'))
 
+base_2018 <- base_individual \%>\%
+ dplyr::filter(year==2018) \%>\%
+ dplyr::select(microdata) \%>\%
+ tidyr::unnest(microdata)
+
+
+bases_bind <- base_individual \%>\%
+ dplyr::select(microdata) \%>\%
+ tidyr::unnest(cols = c(microdata))
 }
